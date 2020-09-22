@@ -1,0 +1,78 @@
+---
+title: "dumb line graph"
+author: "too many cells wearing a suit"
+date: "2020 September"
+output:
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_depth: 3
+editor_options:
+  chunk_output_type: console
+---
+### Goals
+
+Make a line graph that is terrible, but still informative
+
+***
+
+### Setup
+
+#### Load packages
+
+```{r, message = FALSE, warning = FALSE, echo = TRUE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+#### Load data
+
+Easy mode, use Iris data
+
+***
+
+# Terrible graph
+
+* Use line graph for discrete, non-sequential variables
+    + One axis is a dimension (l or w)
+    + One axis is measurement label (sl, sw, pl, pw)
+* Too many lines
+    + Each observation gets a line
+* Color code by species with ugly/harsh colors
+* Circlize the x-axis, lol
+
+```{r, message = FALSE, warning = FALSE, echo = TRUE, fig.height = 6, fig.width = 6}
+# make iris object for plotting
+iris_pt <- iris
+iris_pt$obs <- row.names(iris_pt)
+iris_pt <- gather(iris_pt, "Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width", key = "Dim", value = "Length")
+
+iris_lab <- data.frame(Dim = c("Petal.Length",
+                          "Petal.Width",
+                          "Sepal.Length",
+                          "Sepal.Width"),
+                       Length = c(max(iris$Petal.Length) + 1,
+                                  max(iris$Petal.Width) + 3,
+                                  max(iris$Sepal.Length) + 1,
+                                  max(iris$Sepal.Width) + 3),
+                       obs = "label")
+
+# make the bad plot, lmao
+ggplot(iris_pt, aes(x = Dim, y = Length, color = Species, group = obs)) +
+  geom_text(data = iris_lab,
+            aes(x = Dim, y = Length, label = Dim),
+            color = "white", family = "serif", fontface = "italic") +
+  geom_line(alpha = 0.33) +
+  scale_color_manual(values = c("#ffcc00", "#ccffcc", "#990066"),
+                     guide = guide_legend(override.aes = list(alpha = 1))) +
+  scale_y_continuous(limits = c(0, 9),
+                     breaks = c(0:9)) +
+  coord_polar("x", start= -44.771) +
+  theme(panel.background = element_rect(fill = "black"),
+        panel.grid.major = element_line(color = "darkgrey",
+                                        size = 0.25),
+        legend.key = element_rect(fill = "black"),
+        axis.text.x = element_blank(),
+        text = element_text(family = "serif", face = "italic"))
+```
